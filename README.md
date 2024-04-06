@@ -32,7 +32,7 @@ asdf plugin add sync https://github.com/robzr/asdf-sync.git
 sync:
 
 ```shell
-# asdf-sync has hooks to run via asdf
+# asdf sync runs as an asdf extension command
 asdf sync help
 ```
 
