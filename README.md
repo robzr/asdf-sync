@@ -29,23 +29,15 @@ asdf plugin add sync
 asdf plugin add sync https://github.com/robzr/asdf-sync.git
 ```
 
-sync:
-
-```shell
-# asdf sync runs as an asdf extension command
-asdf sync help
-```
+That's it!
 
 # Usage
 
-asdf-sync extends the functionality of [asdf](https://github.com/asdf-vm/asdf),
-using the standard syntax [.tool-versions asdf config file](https://asdf-vm.com/manage/configuration.html#tool-versions)
-along with optional configuration tokens embedded in comments to provides the
-following functionality:
-- automatically installs any plugins specified
-- interprets version constraints embedded in .tool-verisons comments
-- updates .tool-versions file with latest version(s) matching constraints
-- uses custom plugin URLs embedded in .tool-version comments
+`asdf sync` runs exclusively as an asdf extension command, and extends the
+functionality of [asdf](https://github.com/asdf-vm/asdf) by automatically
+installing plugins, interpreting version constraints to auto-update 
+.tool-versions, and adds the ability to specify plugin URLs and refs in
+the .tool-versions file.
 
 ## Configuration
 
