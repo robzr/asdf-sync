@@ -39,13 +39,13 @@ asdf sync help
 # Usage
 
 asdf-sync extends the functionality of [asdf](https://github.com/asdf-vm/asdf),
-using the standard syntax [.tool-versions asdf config file](https://asdf-vm.com/manage/configuration.html#tool-versions),
-with optional additional configuration embedeed in specially formatted comments
-to provides the following functionality:
-- automatically installs and updates any plugins by interpreting .tool-versions syntax
-- can read standard format version constraints embeded in .tool-verisons comments
-- can auto-update .tool-versions file, effectively using it as a version lockfile
-- can read and use custom plugin URLs embedded in .tool-version comments
+using the standard syntax [.tool-versions asdf config file](https://asdf-vm.com/manage/configuration.html#tool-versions)
+along with optional configuration tokens embedded in comments to provides the
+following functionality:
+- automatically installs any plugins specified
+- interprets version constraints embedded in .tool-verisons comments
+- updates .tool-versions file with latest version(s) matching constraints
+- uses custom plugin URLs embedded in .tool-version comments
 
 ## Configuration
 
@@ -61,11 +61,11 @@ Now, running `asdf sync` will ensure these plugins are installed.
 ## Version Constraint Interpretation
 
 asdf is great, but there is no native format for intelligent version constraints.
-Version constraints can be a power mechanism to enable automatic updates while
+Version constraints can be a powerful mechanism to enable automatic updates while
 preventing breaking changes. If a program is versioned in accordance with
 [Semantic Versioning](https://semver.org), it should be safe to simply follow
 updates within the same major version, as SemVer specifies that breaking changes
-necessitate a major version increase.
+require a major version increment.
 ```
 sver 1.2.0        # sync-constraint="~> v1.2, !pre"
 terraform 1.5.7   # sync-constraint="~> v1.5, !pre"
@@ -73,8 +73,11 @@ terragrunt 0.51.5 # sync-constraint="~> v0.51.5, !pre"
 ```
 Using a `sync-constraint="<constraint>"` token in .tool-versions will assign a
 version constraint to a given package. Upon running `asdf sync`, the latest
-versions matching the constraint will be determined, the .tool-versions file
-will be updated accordingly, and the packages will automatically be installed.
+versions matching the constraint will be determined, and the .tool-versions file
+will be updated accordingly.
+
+Typically after this, you will also want to run `asdf install` to install the new
+versions.
 
 ## asdf Plugin URLs
 
