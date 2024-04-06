@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-cat<<'_EOF_'
+cat <<'_EOF_'
 
 asdf sync runs as an asdf extension, there is no additional tool to install
 or run. To update, run "asdf plugin update sync".
