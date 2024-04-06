@@ -52,9 +52,9 @@ Now, running `asdf sync` will ensure these plugins are installed.
 
 ## Version Constraint Interpretation
 
-asdf is great, but there is no native format for intelligent version constraints.
-Version constraints can be a powerful mechanism to enable automatic updates while
-preventing breaking changes. If a program is versioned in accordance with
+asdf is great, but there is no native syntax for version constraints, which can
+be a powerful mechanism to enable automatic updates while preventing breaking
+changes. If a program is versioned in accordance with
 [Semantic Versioning](https://semver.org), it should be safe to simply follow
 updates within the same major version, as SemVer specifies that breaking changes
 require a major version increment.
