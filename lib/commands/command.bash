@@ -2,6 +2,8 @@
 #
 # asdf-sync by Rob Zwissler (@robzr) 4/5/2024 https://github.com/robzr/asdf-sync
 
+VERSION=v0.1.0
+
 SVER_RUN=false
 #### BEGIN SVER
 #!/bin/bash
@@ -894,10 +896,11 @@ print_help() {
 	asdf sync -f                            Forces installation (suppress error on
 	                                        missing config, overrides conflicts)
 	asdf sync -h                            Displays usage instructions
-	asdf sync help                          Displays usage instructions
 	asdf sync -q                            Quiet output
 	asdf sync -v                            Verbose output
 	asdf sync <name> [<name> ...]           Manually specify package name(s)
+	asdf sync help                          Displays usage instructions
+	asdf sync version                       Displays plugin version
 	
 	ASDF SYNC CONFIG
 	Using the same .tool-versions files as asdf (the filename cna be overridden
@@ -921,7 +924,7 @@ declare -a TOOL
 TOOL_VERSIONS_FILE=${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-.tool-versions}
 VERBOSITY=${ASDF_SYNC_VERBOSITY:-1}
 
-while getopts "fhqv" arg; do
+while getopts "fhqvV" arg; do
   case "$arg" in
     f)
       FORCE=true
@@ -935,6 +938,10 @@ while getopts "fhqv" arg; do
       ;;
     v)
       VERBOSITY=2
+      ;;
+    V)
+      echo "$VERSION"
+      exit 0
       ;;
     *)
       print_help
