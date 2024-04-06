@@ -2,7 +2,7 @@
 
 # asdf-sync [![Build](https://github.com/robzr/asdf-sync/actions/workflows/build.yml/badge.svg)](https://github.com/robzr/asdf-sync/actions/workflows/build.yml) [![Lint](https://github.com/robzr/asdf-sync/actions/workflows/lint.yml/badge.svg)](https://github.com/robzr/asdf-sync/actions/workflows/lint.yml)
 
-[sync](https://github.com/robzr/asdf-sync) plugin for the [asdf version manager](https://asdf-vm.com) providing Semantic Versioning constraint support and more.
+`asdf sync` plugin for the [asdf version manager](https://asdf-vm.com) providing Semantic Versioning constraint support and more.
 
 </div>
 
