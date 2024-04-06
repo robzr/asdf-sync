@@ -2,10 +2,10 @@
 
 set -euo pipefail
 
-current_script_path=${BASH_SOURCE[0]}
-plugin_dir=$(dirname "$(dirname "$current_script_path")")
+cat<<'_EOF_'
 
-# shellcheck source=./lib/utils.bash
-source "${plugin_dir}/lib/utils.bash"
+asdf sync runs as an asdf extension, there is no additional tool to install
+or run. To update, run "asdf plugin update sync".
 
-install_version "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
+For help, run "asdf sync help".
+_EOF_
