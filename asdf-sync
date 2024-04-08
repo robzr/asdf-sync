@@ -2,7 +2,7 @@
 #
 # asdf-sync by Rob Zwissler (@robzr) 4/5/2024 https://github.com/robzr/asdf-sync
 
-VERSION=v0.3.1
+VERSION=v0.4.0
 
 SVER_RUN=false
 #### BEGIN SVER
@@ -772,6 +772,10 @@ process_tool_versions() {
       fi
     done
     log 6 " - versions=${version[@]}"
+
+    if [ -z "$tool" ] || [[ "${#versions[@]}" -lt 1 ]] ; then
+      continue
+    fi
 
     tmp=
     inside_quote=false

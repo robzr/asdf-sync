@@ -1,0 +1,83 @@
+name: asdf sync & install
+
+description: Install asdf & sync plugin, cache, sync plugins, install tools
+
+inputs:
+  asdf-data-dir:
+    default: ${{ github.workspace }}/.asdf-sync/.data
+    description: Used to set ASDF_DATA_DIR and cache location
+    required: false
+  asdf-dir:
+    default: ${{ github.workspace }}/.asdf-sync
+    description: Used to set ASDF_DIR, asdf installation dir & path export
+    required: false
+  asdf-version:
+    default: master
+    description: Used to pin asdf to a release version
+    required: false
+  cache:
+    default: true
+    description: Set to false to disable cache
+    required: false
+  cache-key-suffix:
+    default:
+    description: Cache key suffix, useful if you want to maintain multiple caches in the same repo.
+    required: false
+  cache-version:
+    default: 0
+    description: Cache version, override/increment to force a refresh of the cache.
+    required: false
+  install:
+    default: auto
+    description: Install can be "false", "always", or "auto" (installs only on cache miss).
+  sync:
+    default: auto
+    description: Sync can be "false", "always", or "auto" (sync only on cache miss).
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        path: ${{ inputs.asdf-dir }}
+        ref: ${{ inputs.asdf-version }}
+        repository: asdf-vm/asdf
+
+    - run: |
+        echo 'ASDF_DATA_DIR=${{ inputs.asdf-data-dir }}' >>"${GITHUB_ENV}"
+        echo 'ASDF_DIR=${{ inputs.asdf-dir }}' >>"${GITHUB_ENV}"
+        echo '${{ inputs.asdf-dir }}/bin' >>"${GITHUB_PATH}"
+        echo '${{ inputs.asdf-data-dir }}/shims' >>"${GITHUB_PATH}"
+      shell: bash
+
+    - id: asdf-cache-restore
+      if: inputs.cache == 'true'
+      uses: actions/cache/restore@v4
+      with:
+        key: asdf-v${{ inputs.cache-version }}-${{ runner.os }}-${{ inputs.cache-key-suffix == '' && hashFiles('**/.tool-versions') || '' }}
+        path: ${{ inputs.asdf-data-dir }}
+        restore-keys: |
+          asdf-v${{ inputs.cache-version }}-${{ runner.os }}-
+
+    - run: asdf plugin add sync https://github.com/robzr/asdf-sync.git
+      shell: bash
+
+    - if: inputs.sync == 'always' || (inputs.sync == 'auto' && steps.asdf-cache-restore.outputs.cache-hit != 'true')
+      run: asdf sync
+      shell: bash
+
+    - if: inputs.install == 'always' || (inputs.install == 'auto' && steps.asdf-cache-restore.outputs.cache-hit != 'true')
+      run: asdf install
+      shell: bash
+
+    - if: inputs.cache == 'true' && (
+          inputs.install == 'always' || 
+          inputs.sync == 'always' || (
+             (inputs.install == 'auto' || inputs.sync == 'auto') && steps.asdf-cache-restore.outputs.cache-hit != 'true'
+          )
+        )
+      uses: actions/cache/save@v4
+      with:
+        # using steps.restore-cache.outputs.cache-primary-key would re-use the earlier hash if tool-versions is updated by asdf-sync
+        key: asdf-v${{ inputs.cache-version }}-${{ runner.os }}-${{ inputs.cache-key-suffix == '' && hashFiles('**/.tool-versions') || '' }}
+        path: ${{ inputs.asdf-data-dir }}
