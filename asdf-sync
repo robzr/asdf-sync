@@ -2,7 +2,7 @@
 #
 # asdf-sync by Rob Zwissler (@robzr) 4/5/2024 https://github.com/robzr/asdf-sync
 
-VERSION=v0.4.0
+VERSION=v0.4.1
 
 SVER_RUN=false
 #### BEGIN SVER
@@ -731,7 +731,7 @@ process_tool_versions() {
     shift
   done
 
-  regex='^([^ ]*)  *([^ ]*)  *([^ ]*)'
+  regex='^([^# ]*)  *([^# ]*)  *([^# ]*)'
   while IFS="$'\r'" read -r line ; do
     if [[ "$line" =~ $regex ]] ; then
       plugins_tool+=("${BASH_REMATCH[1]}")
