@@ -2,7 +2,7 @@
 #
 # asdf-sync by Rob Zwissler (@robzr) 4/5/2024 https://github.com/robzr/asdf-sync
 
-VERSION=v0.2.1
+VERSION=v0.3.0
 
 SVER_RUN=false
 #### BEGIN SVER
