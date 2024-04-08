@@ -11,6 +11,7 @@
 - [Dependencies](#dependencies)
 - [Install](#install)
 - [Usage](#usage)
+- [GitHub Action](#github-action)
 - [Credits](#credits)
 - [Contributing](#contributing)
 - [License](#license)
@@ -96,6 +97,25 @@ terraform 1.5.7   # sync-ref="dev/new_plugins"
 ## Help!
 
 At any time, just run `asdf sync help` for detailed usage instructions.
+
+# GitHub Action
+
+A composite GitHub action exists, which can be called from workflows, and will
+take care of installing `asdf`, installing `asdf-sync`, running `asdf sync`,
+and running `asdf install. It incorporates caching, and the default behavior
+will simply run previously installed tools out of the cache, unless a change
+in `.tool-versions` is detected.
+
+Usage is simple, just make sure you checkout your own repo first, so it can read
+your `.tool-versions`.
+```
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: robzr/asdf-sync@v0.4
+```
+
+See [action.yaml](action.yaml) for advanced usage options.
 
 # Credits
 
