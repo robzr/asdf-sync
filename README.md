@@ -74,7 +74,8 @@ terragrunt 0.51.5 # sync-constraint="~> v0.51.5, !pre"
 Using a `sync-constraint="<constraint>"` token in .tool-versions will assign a
 version constraint to a given package. Upon running `asdf sync`, the latest
 versions matching the constraint will be determined, and the .tool-versions file
-will be updated accordingly.
+will be updated accordingly. The double quotes are optional, but needed if the
+constraint contains any whitespace.
 
 Typically after this, you will also want to run `asdf install` to install the new
 versions.
@@ -89,18 +90,15 @@ embedded in .tool-versions comments, asdf-sync can take care of this
 automatically.
 ```
 sver 1.2.0        # sync-url=https://github.com/robzr/asdf-sver
-terraform 1.5.7   # sync-constraint="~> v1.5, !pre" sync-url=https://github.com/blah/blah
-terragrunt 0.51.5 # 
+terraform 1.5.7   # sync-constraint="~> v1.5, !pre" sync-url="https://github.com/blah/blah"
 ```
 
 ## asdf Plugin refs
 
-Although not yet supported by asdf, the `sync-ref=<ref>` token can also be
-used to override a default plugin git ref.
+The `sync-ref=<ref>` token can also be used to override the default plugin git ref.
 ```
 sver 1.2.0        # sync-url=https://github.com/robzr/asdf-sver sver-ref=development
-terraform 1.5.7   # sync-constraint="~> v1.5, !pre" sync-url=https://github.com/blah/blah
-terragrunt 0.51.5 # 
+terraform 1.5.7   # sync-ref="dev/new_plugins"
 ```
 
 ## Help!

@@ -844,39 +844,41 @@ process_tool_versions() {
     done
     log 5 "tool=${tool} existing_url=${existing_url} existing_ref=${existing_ref} sync_url=${sync_url} sync_ref=${sync_ref}"
 
-    if [ -n "$sync_url" ] ; then # [ -n "$sync_ref" ] || [ -n "$sync_url" ]
-      if [ -n "$sync_url" ] ; then
-        if [ -z "$existing_url" ] ; then 
-          echo "Plugin ${tool} not installed, installing using sync_url ${sync_url}"
+    if [ -n "$sync_url" ] ; then
+      if [ -z "$existing_url" ] ; then 
+        log 1 "${tool} plugin is not installed, adding using sync-url ${sync_url}"
+        asdf plugin add "$tool" "$sync_url"
+        existing_ref=$(asdf plugin list --urls --refs | sed -n "/^sver  */s/[^ ]* *[^ ]* *\([^ ]*\) .*/\1/p")
+      elif [ "$existing_url" = "$sync_url" ] ; then
+        log 2 "${tool} plugin is already installed with sync_url"
+      else
+        if "$FORCE" ; then
+          log 1 "${tool} plugin installed with different URL from sync-url, overriding"
+          asdf plugin remove "$tool"
           asdf plugin add "$tool" "$sync_url"
-          #existing_ref=$(asdf plugin list --urls --refs | sed -n "/^sver  */s/[^ ]* *[^ ]* *\([^ ]*\) .*/\1/p")
-        elif [ "$existing_url" = "$sync_url" ] ; then
-          log 2 "Plugin ${tool} installed and has same url as specified to sync."
         else
-          if "$FORCE" ; then
-            log 1 "Plugin ${tool} installed with different URL as specified to sync, overriding".
-            asdf plugin remove "$tool"
-            asdf plugin add "$tool" "$sync_url"
-          else
-            log 1 "Warning: plugin ${tool} installed and has different URL as specified to sync, doing nothing."
-          fi
+          log 1 "${tool} plugin installed with different URL from sync-url, ignoring (use -f to force install)"
         fi
       fi
-      # asdf plugin update ref seems broken, hold off on implementing
-      #if [ -n "$sync_ref" ] ; then
-      #  if [ -z "$existing_ref" ] ; then 
-      #    echo "Plugin ${tool} is not installed and no sync-url was specified to install, ignore sync-ref"
-      #  elif [ "$existing_ref" = "$sync_ref" ] ; then
-      #    echo "Plugin ${tool} installed and has same ref as specified to sync, skipping."
-      #  else
-      #    echo "Plugin ${tool} installed and has different ref as specified to sync"
-      #  fi
-      #fi
     elif [ -z "${existing_url}" ] ; then
-      log 1 "Installing ${tool} plugin"
+      log 1 "${tool} plugin is not installing, adding"
       asdf plugin add "$tool"
+      existing_ref=$(asdf plugin list --urls --refs | sed -n "/^sver  */s/[^ ]* *[^ ]* *\([^ ]*\) .*/\1/p")
     else
-      log 2 "Skipping ${tool} plugin (already installed)"
+      log 1 "${tool} plugin is already installed"
+    fi
+
+    if [ -n "$sync_ref" ] ; then
+      if [ -z "$existing_ref" ] ; then 
+        log 1 "${tool} plugin is not installed, not in registry, and no sync-url was specified, ignoring sync-ref"
+      else
+        if [ "$existing_ref" = "$sync_ref" ] ; then
+          log 1 "${tool} plugin is already installed with same ref as sync-ref, updating"
+        else
+          log 1 "${tool} plugin is already installed with different ref from sync-ref, updating and switching"
+        fi
+        asdf plugin update "$tool" "$sync_ref"
+      fi
     fi
 
     if ! $ignore && [ -n "$constraint" ] ; then
@@ -897,17 +899,19 @@ process_tool_versions() {
 print_help() {
   cat <<-_EOF_ 1>&2
 	asdf sync version: ${VERSION}
-
-	ASDF SYNC
+	
+	ASDF SYNC COMMANDS
 	asdf sync                               Sync .tool-versions plugins (install,
 	                                        optionally update using constraints)
+	asdf sync <name> [<name> ...]           Manually specify package name(s)
+	asdf sync help                          Displays usage instructions
+	asdf sync version                       Displays plugin version
+	
+	ASDF SYNC FLAGS
 	asdf sync -f                            Forces installation (suppress error on
 	                                        missing config, overrides conflicts)
 	asdf sync -q                            Quiet output
 	asdf sync -v                            Verbose output
-	asdf sync <name> [<name> ...]           Manually specify package name(s)
-	asdf sync help                          Displays usage instructions
-	asdf sync version                       Displays plugin version
 	
 	ASDF SYNC CONFIG
 	Using the same .tool-versions files as asdf (the filename can be overridden
@@ -918,10 +922,10 @@ print_help() {
 	                                    sver docs at https://github.com/robzr/sver
 	                                    ex: "v1", ">= 1, < 3.0", "~> v1.2, !pre"
 	sync-ignore=(true|false)            Disable asdf-sync for a particular tool
-	sync-ref=<ref>                      Override plugin ref (not yet implemented)
+	sync-ref=<ref>                      Override plugin ref
 	sync-url=<url>                      Override plugin URL (you may need to run
 	                                    asdf sync -f to override conflicts if the
-	                                    plugin is in the plugin registry.
+	                                    plugin is in the plugin registry)
 	_EOF_
 }
 
@@ -967,7 +971,7 @@ else
     exit 0
   else
     if [ "$VERBOSITY" -gt 0 ] ; then
-      echo "Error: no "$TOOL_VERSIONS_FILE" found."
+      echo "Error: no $TOOL_VERSIONS_FILE found"
     fi
     exit 1
   fi
