@@ -731,7 +731,7 @@ process_tool_versions() {
     shift
   done
 
-  regex='^([^# ]*)  *([^# ]*)  *([^# ]*)'
+  regex='^([^ ]*)  *([^ ]*)  *([^ ]*)'
   while IFS="$'\r'" read -r line ; do
     if [[ "$line" =~ $regex ]] ; then
       plugins_tool+=("${BASH_REMATCH[1]}")
@@ -746,7 +746,7 @@ process_tool_versions() {
     if [ "$comment" = "$line" ] ; then
       comment=
     fi
-    comment=${comment## }
+    line=${line%%#*}
     tool=${line%% *}
     if [ "${#run_tools[@]}" -gt 0 ] ; then
       found=false
@@ -780,6 +780,7 @@ process_tool_versions() {
     tmp=
     inside_quote=false
     words=()
+    comment=${comment## }
     for (( i=0 ; i <= ${#comment} && ${#comment} > 0 ; i++ )) ; do
       char=${comment:i:1}
       if [ -z "$char" ] ; then
