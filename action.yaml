@@ -20,7 +20,7 @@ inputs:
     description: Set to false to disable cache
     required: false
   cache-key-suffix:
-    default:
+    default: ${{ hashFiles('**/.tool-versions') }}
     description: Cache key suffix, useful if you want to maintain multiple caches in the same repo.
     required: false
   cache-version:
