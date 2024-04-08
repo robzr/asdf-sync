@@ -54,7 +54,7 @@ runs:
       if: inputs.cache == 'true'
       uses: actions/cache/restore@v4
       with:
-        key: asdf-v${{ inputs.cache-version }}-${{ runner.os }}-${{ inputs.cache-key-suffix == '' && hashFiles('**/.tool-versions') || '' }}
+        key: asdf-v${{ inputs.cache-version }}-${{ runner.os }}-${{ inputs.cache-key-suffix == '' && hashFiles('**/.tool-versions') || inputs.cache-key-suffix }}
         path: ${{ inputs.asdf-data-dir }}
         restore-keys: |
           asdf-v${{ inputs.cache-version }}-${{ runner.os }}-
@@ -79,5 +79,5 @@ runs:
       uses: actions/cache/save@v4
       with:
         # using steps.restore-cache.outputs.cache-primary-key would re-use the earlier hash if tool-versions is updated by asdf-sync
-        key: asdf-v${{ inputs.cache-version }}-${{ runner.os }}-${{ inputs.cache-key-suffix == '' && hashFiles('**/.tool-versions') || '' }}
+        key: asdf-v${{ inputs.cache-version }}-${{ runner.os }}-${{ inputs.cache-key-suffix == '' && hashFiles('**/.tool-versions') || inputs.cache-key-suffix }}
         path: ${{ inputs.asdf-data-dir }}
