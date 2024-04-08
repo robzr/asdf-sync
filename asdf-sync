@@ -2,7 +2,7 @@
 #
 # asdf-sync by Rob Zwissler (@robzr) 4/5/2024 https://github.com/robzr/asdf-sync
 
-VERSION=v0.3.0
+VERSION=v0.3.1
 
 SVER_RUN=false
 #### BEGIN SVER
@@ -757,7 +757,7 @@ process_tool_versions() {
       done
       $found || continue
     fi
-    log 4 "Found ${TOOL_VERSIONS_FILE} entry for ${tool}"
+    log 4 "found ${TOOL_VERSIONS_FILE} entry for ${tool}"
 
     tmp=${line#* }
     tmp=${tmp%#*}
@@ -882,15 +882,15 @@ process_tool_versions() {
     fi
 
     if ! $ignore && [ -n "$constraint" ] ; then
-      log 1 -n "Checking ${tool} constraint \"${constraint}\" "
+      log 1 -n "${tool} checking sync-constraint \"${constraint}\" "
       version=$(asdf list all "${tool}" | sver_max "${constraint}")
       if [ "$version" != "${versions[0]}" ] ; then
-        log 1 "- found new version, upgrading ${versions[0]} -> ${version}."
+        log 1 "- found new version, upgrading ${versions[0]} -> ${version}"
         tmp=$(mktemp)
         sed "s/^\( *${tool}  *\)[^ ][^ ]*\(.*\)/\1${version}\2/" "$TOOL_VERSIONS_FILE" > "$tmp"
         mv "$tmp" "$TOOL_VERSIONS_FILE" 
       else
-        log 1 "- up to date."
+        log 1 "- version up to date"
       fi
     fi
   done < "$TOOL_VERSIONS_FILE"
