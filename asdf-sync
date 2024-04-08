@@ -2,7 +2,7 @@
 #
 # asdf-sync by Rob Zwissler (@robzr) 4/5/2024 https://github.com/robzr/asdf-sync
 
-VERSION=v0.2.0
+VERSION=v0.2.1
 
 SVER_RUN=false
 #### BEGIN SVER
@@ -720,7 +720,7 @@ log() {
 process_tool_versions() {
   local accum broke char comment constraint i ignore inside_quote keys 
   local existing_url existing_ref found plugins_tool plugins_url plugins_ref
-  local url ref regex tmp run_tools tool version values versions words
+  local sync_url sync_ref regex tmp run_tools tool version values versions words
   declare -a keys run_tools values versions words
   declare -a plugins_tool plugins_url plugins_ref
   local verbosity="$1"
@@ -757,7 +757,7 @@ process_tool_versions() {
       done
       $found || continue
     fi
-    log 4 "Found entry for ${tool}"
+    log 4 "Found ${TOOL_VERSIONS_FILE} entry for ${tool}"
 
     tmp=${line#* }
     tmp=${tmp%#*}
@@ -771,6 +771,7 @@ process_tool_versions() {
         tmp=
       fi
     done
+    log 6 " - versions=${version[@]}"
 
     tmp=
     inside_quote=false
@@ -808,8 +809,8 @@ process_tool_versions() {
     broke=false
     constraint=
     ignore=false
-    ref=
-    url=
+    sync_ref=
+    sync_url=
     for (( i = 0 ; i < ${#keys[@]} ; i++ )) ; do
       log 5 "keys[${i}]=${keys[i]} values[${i}]=${values[i]}"
       if [ "${keys[i]}" = 'sync-constraint' ] || [ "${keys[i]}" = 'sync-constraints' ] ; then
@@ -819,9 +820,9 @@ process_tool_versions() {
           ignore=true
         fi
       elif [ "${keys[i]}" = 'sync-ref' ] ; then
-        ref="${values[i]}"
+        sync_ref="${values[i]}"
       elif [ "${keys[i]}" = 'sync-url' ] ; then
-        url="${values[i]}"
+        sync_url="${values[i]}"
       elif [ "${keys[i]/sync-*/sync}" = 'sync' ] ; then
         log 1 "Warning: unknown sync key found (${keys[i]}) on tool ${tool}, skipping."
         broke=true
@@ -833,44 +834,49 @@ process_tool_versions() {
 
     existing_ref=
     existing_url=
-    #if [ -n "$ref" ] || [ -n "$url" ] ; then
-    if [ -n "$url" ] ; then
-      for (( i = 0 ; i < ${#plugins_tool[@]} ; i++ )) ; do
-        log 5 "(${tool})[${i}] url=${plugins_url[i]} ref=${plugins_ref[i]}"
-        if [ "${plugins_tool[i]}" = "$tool" ] ; then
-          existing_ref=${plugins_ref[i]}
-          existing_url=${plugins_url[i]}
-          break
-        fi
-      done
-      log 5 "tool=${tool} existing_url=${existing_url} existing_ref=${existing_ref} url=${url} ref=${ref}"
-      if [ -n "$url" ] ; then
+    for (( i = 0 ; i < ${#plugins_tool[@]} ; i++ )) ; do
+      log 6 "(${tool})[${i}] plugins_url=${plugins_url[i]} plugins_ref=${plugins_ref[i]}"
+      if [ "${plugins_tool[i]}" = "$tool" ] ; then
+        existing_ref=${plugins_ref[i]}
+        existing_url=${plugins_url[i]}
+        break
+      fi
+    done
+    log 5 "tool=${tool} existing_url=${existing_url} existing_ref=${existing_ref} sync_url=${sync_url} sync_ref=${sync_ref}"
+
+    if [ -n "$sync_url" ] ; then # [ -n "$sync_ref" ] || [ -n "$sync_url" ]
+      if [ -n "$sync_url" ] ; then
         if [ -z "$existing_url" ] ; then 
-          echo "Plugin ${tool} not installed, installing using url ${url}"
-          asdf plugin add "$tool" "$url"
+          echo "Plugin ${tool} not installed, installing using sync_url ${sync_url}"
+          asdf plugin add "$tool" "$sync_url"
           #existing_ref=$(asdf plugin list --urls --refs | sed -n "/^sver  */s/[^ ]* *[^ ]* *\([^ ]*\) .*/\1/p")
-        elif [ "$existing_url" = "$url" ] ; then
+        elif [ "$existing_url" = "$sync_url" ] ; then
           log 2 "Plugin ${tool} installed and has same url as specified to sync."
         else
           if "$FORCE" ; then
             log 1 "Plugin ${tool} installed with different URL as specified to sync, overriding".
             asdf plugin remove "$tool"
-            asdf plugin add "$tool" "$url"
+            asdf plugin add "$tool" "$sync_url"
           else
             log 1 "Warning: plugin ${tool} installed and has different URL as specified to sync, doing nothing."
           fi
         fi
       fi
       # asdf plugin update ref seems broken, hold off on implementing
-      #if [ -n "$ref" ] ; then
+      #if [ -n "$sync_ref" ] ; then
       #  if [ -z "$existing_ref" ] ; then 
       #    echo "Plugin ${tool} is not installed and no sync-url was specified to install, ignore sync-ref"
-      #  elif [ "$existing_ref" = "$ref" ] ; then
+      #  elif [ "$existing_ref" = "$sync_ref" ] ; then
       #    echo "Plugin ${tool} installed and has same ref as specified to sync, skipping."
       #  else
       #    echo "Plugin ${tool} installed and has different ref as specified to sync"
       #  fi
       #fi
+    elif [ -z "${existing_url}" ] ; then
+      log 1 "Installing ${tool} plugin"
+      asdf plugin add "$tool"
+    else
+      log 2 "Skipping ${tool} plugin (already installed)"
     fi
 
     if ! $ignore && [ -n "$constraint" ] ; then
