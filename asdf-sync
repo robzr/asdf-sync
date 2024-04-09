@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1008,SC2015,SC2096
 #
 # asdf-sync by Rob Zwissler (@robzr) 4/5/2024 https://github.com/robzr/asdf-sync
 
@@ -718,12 +719,11 @@ log() {
 }
 
 process_tool_versions() {
-  local accum broke char comment constraint i ignore inside_quote keys 
+  local broke char comment constraint i ignore inside_quote keys 
   local existing_url existing_ref found plugins_tool plugins_url plugins_ref
   local sync_url sync_ref regex tmp run_tools tool version values versions words
   declare -a keys run_tools values versions words
   declare -a plugins_tool plugins_url plugins_ref
-  local verbosity="$1"
   shift
   run_tools=()
   while [ -n "$1" ] ; do
@@ -732,7 +732,7 @@ process_tool_versions() {
   done
 
   regex='^([^ ]*)  *([^ ]*)  *([^ ]*)'
-  while IFS="$'\r'" read -r line ; do
+  while IFS=$'\r' read -r line ; do
     if [[ "$line" =~ $regex ]] ; then
       plugins_tool+=("${BASH_REMATCH[1]}")
       plugins_url+=("${BASH_REMATCH[2]}")
@@ -741,7 +741,7 @@ process_tool_versions() {
   done <<<"$(asdf plugin list --urls --refs)"
 
   # syntax of tool-versions  is: "<tool> <version> [<version> ...] [# <comment...>]"
-  while IFS="$'\n'" read -r line ; do
+  while IFS=$'\n' read -r line ; do
     comment=${line#*#}
     if [ "$comment" = "$line" ] ; then
       comment=
@@ -765,13 +765,13 @@ process_tool_versions() {
     versions=()
     while [ -n "$tmp" ] ; do
       version=${tmp%% *}
-      versions+=($version)
+      versions+=("$version")
       tmp=${tmp#* }
       if [ "$tmp" = "$version" ] ; then
         tmp=
       fi
     done
-    log 6 " - versions=${version[@]}"
+    log 6 " - versions=${version[*]}"
 
     if [ -z "$tool" ] || [[ "${#versions[@]}" -lt 1 ]] ; then
       continue
@@ -789,7 +789,7 @@ process_tool_versions() {
         if $inside_quote ; then
           tmp+="$char"
         else
-          ! [ -n "$tmp" ] || words+=("$tmp")
+          [ -z "$tmp" ] || words+=("$tmp")
           tmp=
         fi
       elif [ "$char" = '"' ] ; then
@@ -898,7 +898,7 @@ process_tool_versions() {
         log 1 "- version up to date"
       fi
     fi
-  done < "$TOOL_VERSIONS_FILE"
+  done <<< "$(cat "$TOOL_VERSIONS_FILE")"
 }
 
 print_help() {
@@ -935,7 +935,6 @@ print_help() {
 }
 
 FORCE=false
-MY_NAME="asdf sync"
 declare -a TOOL
 TOOL_VERSIONS_FILE=${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-.tool-versions}
 VERBOSITY=${ASDF_SYNC_VERBOSITY:-1}
