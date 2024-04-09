@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  Release:
+    name: Release
+    permissions: write-all
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: get-version
+        uses: robzr/sver@v1
+        with:
+          command: json "$(./asdf-sync -V)"
+
+      - id: is-existing-release
+        uses: robzr/sver@v1
+        with:
+          command: filter '${{ fromJSON(steps.get-version.outputs.output).version }}'
+          input-command: gh release list --json tagName --jq '.[] | .tagName'
+
+      - env:
+          MAJOR: ${{ fromJSON(steps.get-version.outputs.output).major }} 
+          MINOR: ${{ fromJSON(steps.get-version.outputs.output).minor }} 
+          VERSION: v${{ fromJSON(steps.get-version.outputs.output).version }} 
+        if: steps.is-existing-release.outputs.output != ''
+        name: Create New Release
+        run: |
+          gh release \
+            create "$VERSION" \
+            --generate-notes \
+            --latest \
+            sver
+          git tag -f "v${MAJOR}"
+          git tag -f "v${MAJOR}.${MINOR}"
+          git push -f --tags
