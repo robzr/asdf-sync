@@ -878,11 +878,11 @@ process_tool_versions() {
         log 1 "${tool} plugin is not installed, not in registry, and no sync-url was specified, ignoring sync-ref"
       else
         if [ "$existing_ref" = "$sync_ref" ] ; then
-          log 1 "${tool} plugin is already installed with same ref as sync-ref, updating"
+          log 1 "${tool} plugin is already installed with same ref as sync-ref"
         else
           log 1 "${tool} plugin is already installed with different ref from sync-ref, updating and switching"
+          asdf plugin update "$tool" "$sync_ref"
         fi
-        asdf plugin update "$tool" "$sync_ref"
       fi
     fi
 
