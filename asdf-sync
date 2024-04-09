@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1008,SC2015,SC2096
 #
 # asdf-sync by Rob Zwissler (@robzr) 4/5/2024 https://github.com/robzr/asdf-sync
 
-VERSION=v0.4.2
+VERSION=v0.4.3
 
 SVER_RUN=false
 #### BEGIN SVER
@@ -77,18 +78,18 @@ _sver_complete_function() {
       "${COMP_WORDS[1]}" || true)
   elif [ "$COMP_CWORD" = 2 ]; then
     case "${COMP_WORDS[1]}" in
-      bump)
-        # shellcheck disable=SC2046
-        read -ra COMPREPLY <<<$(compgen -W "major minor patch" "${COMP_WORDS[2]}" || true)
-        ;;
-      get)
-        # shellcheck disable=SC2046
-        read -ra COMPREPLY <<<$(compgen -W \
-          "build_metadata major minor patch prerelease" "${COMP_WORDS[2]}" || true)
-        ;;
-      *)
-        COMPREPLY=()
-        ;;
+    bump)
+      # shellcheck disable=SC2046
+      read -ra COMPREPLY <<<$(compgen -W "major minor patch" "${COMP_WORDS[2]}" || true)
+      ;;
+    get)
+      # shellcheck disable=SC2046
+      read -ra COMPREPLY <<<$(compgen -W \
+        "build_metadata major minor patch prerelease" "${COMP_WORDS[2]}" || true)
+      ;;
+    *)
+      COMPREPLY=()
+      ;;
     esac
   fi
 }
@@ -677,20 +678,20 @@ if [ "${SVER_RUN:-true}" = true ]; then
     fi
   fi
   case "$command" in
-    bump_* | constraint | get_* | greater_than | json | less_than | yaml)
-      if ! sver_validate "$1"; then
-        echo "Error: Invalid semver specified (${1})." >&2
-        exit 1
-      fi
-      ;;
+  bump_* | constraint | get_* | greater_than | json | less_than | yaml)
+    if ! sver_validate "$1"; then
+      echo "Error: Invalid semver specified (${1})." >&2
+      exit 1
+    fi
+    ;;
   esac
   case "$command" in
-    equals | greater_than | less_than)
-      if ! sver_validate -s "$2"; then
-        echo "Error: Invalid semver substring specified (${2})." >&2
-        exit 1
-      fi
-      ;;
+  equals | greater_than | less_than)
+    if ! sver_validate -s "$2"; then
+      echo "Error: Invalid semver substring specified (${2})." >&2
+      exit 1
+    fi
+    ;;
   esac
 
   status=0
@@ -708,32 +709,31 @@ log() {
   local echo_arg
   local min_verbosity=$1
   shift
-  if [ "$1" = "-n" ] ; then
+  if [ "$1" = "-n" ]; then
     echo_arg="-n"
     shift
   fi
-  if [ "$VERBOSITY" -ge "$min_verbosity" ] ; then 
+  if [ "$VERBOSITY" -ge "$min_verbosity" ]; then
     echo $echo_arg "$@"
   fi
 }
 
 process_tool_versions() {
-  local accum broke char comment constraint i ignore inside_quote keys 
+  local broke char comment constraint i ignore inside_quote keys
   local existing_url existing_ref found plugins_tool plugins_url plugins_ref
   local sync_url sync_ref regex tmp run_tools tool version values versions words
   declare -a keys run_tools values versions words
   declare -a plugins_tool plugins_url plugins_ref
-  local verbosity="$1"
   shift
   run_tools=()
-  while [ -n "$1" ] ; do
+  while [ -n "$1" ]; do
     run_tools+=("$1")
     shift
   done
 
   regex='^([^ ]*)  *([^ ]*)  *([^ ]*)'
-  while IFS="$'\r'" read -r line ; do
-    if [[ "$line" =~ $regex ]] ; then
+  while IFS=$'\r' read -r line; do
+    if [[ "$line" =~ $regex ]]; then
       plugins_tool+=("${BASH_REMATCH[1]}")
       plugins_url+=("${BASH_REMATCH[2]}")
       plugins_ref+=("${BASH_REMATCH[3]}")
@@ -741,17 +741,17 @@ process_tool_versions() {
   done <<<"$(asdf plugin list --urls --refs)"
 
   # syntax of tool-versions  is: "<tool> <version> [<version> ...] [# <comment...>]"
-  while IFS="$'\n'" read -r line ; do
+  while IFS=$'\n' read -r line; do
     comment=${line#*#}
-    if [ "$comment" = "$line" ] ; then
+    if [ "$comment" = "$line" ]; then
       comment=
     fi
     line=${line%%#*}
     tool=${line%% *}
-    if [ "${#run_tools[@]}" -gt 0 ] ; then
+    if [ "${#run_tools[@]}" -gt 0 ]; then
       found=false
-      for tmp in "${run_tools[@]}" ; do
-        if [ "$tmp" = "$tool" ] ; then
+      for tmp in "${run_tools[@]}"; do
+        if [ "$tmp" = "$tool" ]; then
           found=true
         fi
       done
@@ -763,17 +763,17 @@ process_tool_versions() {
     tmp=${tmp%#*}
 
     versions=()
-    while [ -n "$tmp" ] ; do
+    while [ -n "$tmp" ]; do
       version=${tmp%% *}
-      versions+=($version)
+      versions+=("$version")
       tmp=${tmp#* }
-      if [ "$tmp" = "$version" ] ; then
+      if [ "$tmp" = "$version" ]; then
         tmp=
       fi
     done
-    log 6 " - versions=${version[@]}"
+    log 6 " - versions=${version[*]}"
 
-    if [ -z "$tool" ] || [[ "${#versions[@]}" -lt 1 ]] ; then
+    if [ -z "$tool" ] || [[ "${#versions[@]}" -lt 1 ]]; then
       continue
     fi
 
@@ -781,29 +781,29 @@ process_tool_versions() {
     inside_quote=false
     words=()
     comment=${comment## }
-    for (( i=0 ; i <= ${#comment} && ${#comment} > 0 ; i++ )) ; do
+    for ((i = 0; i <= ${#comment} && ${#comment} > 0; i++)); do
       char=${comment:i:1}
-      if [ -z "$char" ] ; then
-          words+=("$tmp")
-      elif [ "$char" = ' ' ] ; then
-        if $inside_quote ; then
+      if [ -z "$char" ]; then
+        words+=("$tmp")
+      elif [ "$char" = ' ' ]; then
+        if $inside_quote; then
           tmp+="$char"
         else
-          ! [ -n "$tmp" ] || words+=("$tmp")
+          [ -z "$tmp" ] || words+=("$tmp")
           tmp=
         fi
-      elif [ "$char" = '"' ] ; then
+      elif [ "$char" = '"' ]; then
         $inside_quote && inside_quote=false || inside_quote=true
         tmp+="$char"
-      else 
+      else
         tmp+="$char"
       fi
     done
 
     keys=()
     values=()
-    for word in "${words[@]}" ; do
-      if [[ "$word" =~ ^(sync-[^=]+)=(.*)$ ]] ; then
+    for word in "${words[@]}"; do
+      if [[ "$word" =~ ^(sync-[^=]+)=(.*)$ ]]; then
         keys+=("${BASH_REMATCH[1]}")
         tmp="${BASH_REMATCH[2]#\"}"
         tmp=${tmp%\"}
@@ -816,32 +816,32 @@ process_tool_versions() {
     ignore=false
     sync_ref=
     sync_url=
-    for (( i = 0 ; i < ${#keys[@]} ; i++ )) ; do
+    for ((i = 0; i < ${#keys[@]}; i++)); do
       log 5 "keys[${i}]=${keys[i]} values[${i}]=${values[i]}"
-      if [ "${keys[i]}" = 'sync-constraint' ] || [ "${keys[i]}" = 'sync-constraints' ] ; then
+      if [ "${keys[i]}" = 'sync-constraint' ] || [ "${keys[i]}" = 'sync-constraints' ]; then
         constraint="${values[i]}"
-      elif [ "${keys[i]}" = 'sync-ignore' ] ; then
-        if [ "${values[i]}" = 'true' ] ; then
+      elif [ "${keys[i]}" = 'sync-ignore' ]; then
+        if [ "${values[i]}" = 'true' ]; then
           ignore=true
         fi
-      elif [ "${keys[i]}" = 'sync-ref' ] ; then
+      elif [ "${keys[i]}" = 'sync-ref' ]; then
         sync_ref="${values[i]}"
-      elif [ "${keys[i]}" = 'sync-url' ] ; then
+      elif [ "${keys[i]}" = 'sync-url' ]; then
         sync_url="${values[i]}"
-      elif [ "${keys[i]/sync-*/sync}" = 'sync' ] ; then
+      elif [ "${keys[i]/sync-*/sync}" = 'sync' ]; then
         log 1 "Warning: unknown sync key found (${keys[i]}) on tool ${tool}, skipping."
         broke=true
       fi
     done
-    if $broke ; then
+    if $broke; then
       continue
     fi
 
     existing_ref=
     existing_url=
-    for (( i = 0 ; i < ${#plugins_tool[@]} ; i++ )) ; do
+    for ((i = 0; i < ${#plugins_tool[@]}; i++)); do
       log 6 "(${tool})[${i}] plugins_url=${plugins_url[i]} plugins_ref=${plugins_ref[i]}"
-      if [ "${plugins_tool[i]}" = "$tool" ] ; then
+      if [ "${plugins_tool[i]}" = "$tool" ]; then
         existing_ref=${plugins_ref[i]}
         existing_url=${plugins_url[i]}
         break
@@ -849,15 +849,15 @@ process_tool_versions() {
     done
     log 5 "tool=${tool} existing_url=${existing_url} existing_ref=${existing_ref} sync_url=${sync_url} sync_ref=${sync_ref}"
 
-    if [ -n "$sync_url" ] ; then
-      if [ -z "$existing_url" ] ; then 
+    if [ -n "$sync_url" ]; then
+      if [ -z "$existing_url" ]; then
         log 1 "${tool} plugin is not installed, adding using sync-url ${sync_url}"
         asdf plugin add "$tool" "$sync_url"
         existing_ref=$(asdf plugin list --urls --refs | sed -n "/^${tool}  */s/[^ ]* *[^ ]* *\([^ ]*\) .*/\1/p")
-      elif [ "$existing_url" = "$sync_url" ] ; then
+      elif [ "$existing_url" = "$sync_url" ]; then
         log 2 "${tool} plugin is already installed with sync_url"
       else
-        if "$FORCE" ; then
+        if "$FORCE"; then
           log 1 "${tool} plugin installed with different URL from sync-url, overriding"
           asdf plugin remove "$tool"
           asdf plugin add "$tool" "$sync_url"
@@ -865,7 +865,7 @@ process_tool_versions() {
           log 1 "${tool} plugin installed with different URL from sync-url, ignoring (use -f to force install)"
         fi
       fi
-    elif [ -z "${existing_url}" ] ; then
+    elif [ -z "${existing_url}" ]; then
       log 1 "${tool} plugin is not installing, adding"
       asdf plugin add "$tool"
       existing_ref=$(asdf plugin list --urls --refs | sed -n "/^${tool}  */s/[^ ]* *[^ ]* *\([^ ]*\) .*/\1/p")
@@ -873,11 +873,11 @@ process_tool_versions() {
       log 1 "${tool} plugin is already installed"
     fi
 
-    if [ -n "$sync_ref" ] ; then
-      if [ -z "$existing_ref" ] ; then 
+    if [ -n "$sync_ref" ]; then
+      if [ -z "$existing_ref" ]; then
         log 1 "${tool} plugin is not installed, not in registry, and no sync-url was specified, ignoring sync-ref"
       else
-        if [ "$existing_ref" = "$sync_ref" ] ; then
+        if [ "$existing_ref" = "$sync_ref" ]; then
           log 1 "${tool} plugin is already installed with same ref as sync-ref"
         else
           log 1 "${tool} plugin is already installed with different ref from sync-ref, updating and switching"
@@ -886,19 +886,19 @@ process_tool_versions() {
       fi
     fi
 
-    if ! $ignore && [ -n "$constraint" ] ; then
+    if ! $ignore && [ -n "$constraint" ]; then
       log 1 -n "${tool} checking sync-constraint \"${constraint}\" "
       version=$(asdf list all "${tool}" | sver_max "${constraint}")
-      if [ "$version" != "${versions[0]}" ] ; then
+      if [ "$version" != "${versions[0]}" ]; then
         log 1 "- found new version, upgrading ${versions[0]} -> ${version}"
         tmp=$(mktemp)
-        sed "s/^\( *${tool}  *\)[^ ][^ ]*\(.*\)/\1${version}\2/" "$TOOL_VERSIONS_FILE" > "$tmp"
-        mv "$tmp" "$TOOL_VERSIONS_FILE" 
+        sed "s/^\( *${tool}  *\)[^ ][^ ]*\(.*\)/\1${version}\2/" "$TOOL_VERSIONS_FILE" >"$tmp"
+        mv "$tmp" "$TOOL_VERSIONS_FILE"
       else
         log 1 "- version up to date"
       fi
     fi
-  done < "$TOOL_VERSIONS_FILE"
+  done <<<"$(cat "$TOOL_VERSIONS_FILE")"
 }
 
 print_help() {
@@ -935,47 +935,46 @@ print_help() {
 }
 
 FORCE=false
-MY_NAME="asdf sync"
 declare -a TOOL
 TOOL_VERSIONS_FILE=${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-.tool-versions}
 VERBOSITY=${ASDF_SYNC_VERBOSITY:-1}
 
 while getopts "fhqvV" arg; do
   case "$arg" in
-    f)
-      FORCE=true
-      ;;
-    h)
-      print_help
-      exit 0
-      ;;
-    q)
-      VERBOSITY=0
-      ;;
-    v)
-      VERBOSITY=2
-      ;;
-    V)
-      echo "$VERSION"
-      exit 0
-      ;;
-    *)
-      print_help
-      exit 1
-      ;;
+  f)
+    FORCE=true
+    ;;
+  h)
+    print_help
+    exit 0
+    ;;
+  q)
+    VERBOSITY=0
+    ;;
+  v)
+    VERBOSITY=2
+    ;;
+  V)
+    echo "$VERSION"
+    exit 0
+    ;;
+  *)
+    print_help
+    exit 1
+    ;;
   esac
 done
-shift $((OPTIND-1))
+shift $((OPTIND - 1))
 
 TOOL=("${@}")
 
-if [ -f "$TOOL_VERSIONS_FILE" ] ; then
+if [ -f "$TOOL_VERSIONS_FILE" ]; then
   process_tool_versions "$VERBOSITY" "${TOOL[@]}"
 else
-  if "$FORCE" ; then
+  if "$FORCE"; then
     exit 0
   else
-    if [ "$VERBOSITY" -gt 0 ] ; then
+    if [ "$VERBOSITY" -gt 0 ]; then
       echo "Error: no $TOOL_VERSIONS_FILE found"
     fi
     exit 1
