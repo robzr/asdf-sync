@@ -853,7 +853,7 @@ process_tool_versions() {
       if [ -z "$existing_url" ] ; then 
         log 1 "${tool} plugin is not installed, adding using sync-url ${sync_url}"
         asdf plugin add "$tool" "$sync_url"
-        existing_ref=$(asdf plugin list --urls --refs | sed -n "/^sver  */s/[^ ]* *[^ ]* *\([^ ]*\) .*/\1/p")
+        existing_ref=$(asdf plugin list --urls --refs | sed -n "/^${tool}  */s/[^ ]* *[^ ]* *\([^ ]*\) .*/\1/p")
       elif [ "$existing_url" = "$sync_url" ] ; then
         log 2 "${tool} plugin is already installed with sync_url"
       else
@@ -868,7 +868,7 @@ process_tool_versions() {
     elif [ -z "${existing_url}" ] ; then
       log 1 "${tool} plugin is not installing, adding"
       asdf plugin add "$tool"
-      existing_ref=$(asdf plugin list --urls --refs | sed -n "/^sver  */s/[^ ]* *[^ ]* *\([^ ]*\) .*/\1/p")
+      existing_ref=$(asdf plugin list --urls --refs | sed -n "/^${tool}  */s/[^ ]* *[^ ]* *\([^ ]*\) .*/\1/p")
     else
       log 1 "${tool} plugin is already installed"
     fi
