@@ -3,7 +3,7 @@
 #
 # asdf-sync by Rob Zwissler (@robzr) 4/5/2024 https://github.com/robzr/asdf-sync
 
-VERSION=v0.4.3
+VERSION=v0.5.0
 
 SVER_RUN=false
 #### BEGIN SVER
@@ -455,7 +455,7 @@ Constraints:
     < <version_substring> -- less than
     <= <version_substring> -- less than or equal to
     ~> <version_substring> -- pessimistic constraint operator - least significant
-       (rightmost) identifier specified in the constraint matched with >=, but 
+       (rightmost) identifier specified in the constraint matched with >=, but
        more significant (further left) identifiers must be equal
     !pre[release] -- does not contain a prerelease (ie: \"stable\")
     !bui[ild_metadata] -- does not contain build_metadata
@@ -904,25 +904,25 @@ process_tool_versions() {
 print_help() {
   cat <<-_EOF_ 1>&2
 	asdf sync version: ${VERSION}
-	
+
 	ASDF SYNC COMMANDS
 	asdf sync                               Sync .tool-versions plugins (install,
 	                                        optionally update using constraints)
 	asdf sync <name> [<name> ...]           Manually specify package name(s)
 	asdf sync help                          Displays usage instructions
 	asdf sync version                       Displays plugin version
-	
+
 	ASDF SYNC FLAGS
 	asdf sync -f                            Forces installation (suppress error on
 	                                        missing config, overrides conflicts)
 	asdf sync -q                            Quiet output
 	asdf sync -v                            Verbose output
-	
+
 	ASDF SYNC CONFIG
 	Using the same .tool-versions files as asdf (the filename can be overridden
 	with the TOOL_VERSIONS_FILE environment variable, just like asdf), with
 	optional additional tokens embedded in comments. Available tokens:
-	
+
 	sync-constraint="<constraints>"     Uses sver ${SVER_VERSION} constraint syntax
 	                                    sver docs at https://github.com/robzr/sver
 	                                    ex: "v1", ">= 1, < 3.0", "~> v1.2, !pre"

@@ -12,8 +12,12 @@ inputs:
     description: Used to set ASDF_DIR, asdf installation dir & path export
     required: false
   asdf-version:
-    default: master
+    default: latest
     description: Used to pin asdf to a release version
+    required: false
+  go-version:
+    default: stable
+    description: Used to pin golang to a release version
     required: false
   cache:
     default: true
@@ -37,13 +41,12 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
       with:
-        path: ${{ inputs.asdf-dir }}
-        ref: ${{ inputs.asdf-version }}
-        repository: asdf-vm/asdf
+        go-version: ${{ inputs.go-version }}
 
     - run: |
+        go install github.com/asdf-vm/asdf/cmd/asdf@${{ inputs.asdf-version }}
         echo 'ASDF_DATA_DIR=${{ inputs.asdf-data-dir }}' >>"${GITHUB_ENV}"
         echo 'ASDF_DIR=${{ inputs.asdf-dir }}' >>"${GITHUB_ENV}"
         echo '${{ inputs.asdf-dir }}/bin' >>"${GITHUB_PATH}"
@@ -71,9 +74,9 @@ runs:
       shell: bash
 
     - if: inputs.cache == 'true' && (
-          inputs.install == 'always' || 
+          inputs.install == 'always' ||
           inputs.sync == 'always' || (
-             (inputs.install == 'auto' || inputs.sync == 'auto') && steps.asdf-cache-restore.outputs.cache-hit != 'true'
+            (inputs.install == 'auto' || inputs.sync == 'auto') && steps.asdf-cache-restore.outputs.cache-hit != 'true'
           )
         )
       uses: actions/cache/save@v4
